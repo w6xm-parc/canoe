@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "canoe", "canoe\canoe.csproj", "{4CF5ABBB-AFD4-4D59-BAA3-9DA4CF550D8C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4CF5ABBB-AFD4-4D59-BAA3-9DA4CF550D8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CF5ABBB-AFD4-4D59-BAA3-9DA4CF550D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CF5ABBB-AFD4-4D59-BAA3-9DA4CF550D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CF5ABBB-AFD4-4D59-BAA3-9DA4CF550D8C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA3E9E53-FFF7-4FD1-A4D4-00023FED3A95}
+	EndGlobalSection
+EndGlobal
