@@ -11,16 +11,15 @@ class AudioWebSocket
     private WasapiLoopbackCapture loopbackCapture;
     private MemoryStream audioBuffer;
 
-    public AudioWebSocket(WaveFormat waveFormat)
-    {
-        this.waveFormat = waveFormat;
-    }
+    public AudioWebSocket(WaveFormat waveFormat) => this.waveFormat = waveFormat;
 
     public async Task StartAsync(HttpListenerContext context)
     {
         if (context.Request.IsWebSocketRequest)
         {
-            Console.WriteLine("Someone connected in a websocket way");
+
+            //   Console.WriteLine("Someone connected in a websocket way");
+            Console.WriteLine(context.Request.RemoteEndPoint.ToString() + " connected in a websocket kinda way");
             var webSocketContext = await context.AcceptWebSocketAsync(null);
             WebSocket webSocket = webSocketContext.WebSocket; // Get the WebSocket instance
 
@@ -69,11 +68,22 @@ class Program
 {
     static async Task Main(string[] args)
     {
+
+
+        Console.WriteLine(IPAddress.Any);
+
         // Set up an HTTP listener to accept WebSocket connections
         var listener = new HttpListener();
-        listener.Prefixes.Add("http://10.19.35.11:8080/"); // Listen on all available network interfaces
-        listener.Start();
-        Console.WriteLine("WebSocket server is running on the public interface");
+        listener.Prefixes.Add("http://*:8080/"); // Listen on all available network interfaces
+        // listener.Prefixes.
+        try
+        {
+            listener.Start();
+            Console.WriteLine("WebSocket server is running on the public interface");
+
+        }
+        catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+
 
         while (true)
         {
@@ -84,7 +94,7 @@ class Program
 
     static async Task ProcessWebSocketRequest(HttpListenerContext context)
     {
-        var audioWebSocket = new AudioWebSocket(new WaveFormat(44100, 16, 2));
+        var audioWebSocket = new AudioWebSocket(new WaveFormat(48000, 16, 2));
         await audioWebSocket.StartAsync(context);
     }
 }
