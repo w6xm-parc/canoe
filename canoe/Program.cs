@@ -1,8 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
 using NAudio.Wave;
 
 class AudioWebSocket
@@ -17,9 +14,7 @@ class AudioWebSocket
     {
         if (context.Request.IsWebSocketRequest)
         {
-
-            //   Console.WriteLine("Someone connected in a websocket way");
-            Console.WriteLine(context.Request.RemoteEndPoint.ToString() + " connected in a websocket kinda way");
+            Console.WriteLine(context.Request.RemoteEndPoint.ToString() + " connected");
             var webSocketContext = await context.AcceptWebSocketAsync(null);
             WebSocket webSocket = webSocketContext.WebSocket; // Get the WebSocket instance
 
@@ -63,35 +58,25 @@ class AudioWebSocket
         audioBuffer.Flush();
     }
 }
-
 class Program
 {
     static async Task Main(string[] args)
     {
-
-
-        Console.WriteLine(IPAddress.Any);
-
         // Set up an HTTP listener to accept WebSocket connections
         var listener = new HttpListener();
         listener.Prefixes.Add("http://*:8080/"); // Listen on all available network interfaces
-        // listener.Prefixes.
         try
         {
             listener.Start();
-            Console.WriteLine("WebSocket server is running on the public interface");
-
+            Console.WriteLine("WebSocket server is running");
         }
         catch (Exception ex) { Console.WriteLine(ex.ToString()); }
-
-
         while (true)
         {
             HttpListenerContext context = await listener.GetContextAsync();
             _ = ProcessWebSocketRequest(context);
         }
     }
-
     static async Task ProcessWebSocketRequest(HttpListenerContext context)
     {
         var audioWebSocket = new AudioWebSocket(new WaveFormat(48000, 16, 2));
