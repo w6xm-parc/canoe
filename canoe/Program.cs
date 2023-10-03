@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
+using System.Text;
 using NAudio.Wave;
 
 class AudioWebSocket
@@ -33,7 +34,26 @@ class AudioWebSocket
                     byte[] audioData = audioBuffer.ToArray();
                     await webSocket.SendAsync(new ArraySegment<byte>(audioData), WebSocketMessageType.Binary, true, default);
                     audioBuffer.SetLength(0);
+                    Console.Write("s");
                 }
+
+                byte[] wsBuffer = new byte[1024];
+                var wsResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(wsBuffer), CancellationToken.None);
+
+                if (wsResult.MessageType == WebSocketMessageType.Binary)
+                {
+                    // Send the received audio data
+                    Console.Write("m");
+                    SendMic(wsBuffer, wsResult.Count);
+                }
+
+                if (wsResult.MessageType == WebSocketMessageType.Text)
+                {
+                    Console.WriteLine("Text: " + Encoding.UTF8.GetString(wsBuffer));
+                    wsBuffer = Encoding.UTF8.GetBytes("ACK");
+                    await webSocket.SendAsync(wsBuffer, WebSocketMessageType.Text, true, default);
+                }
+               
                 await Task.Delay(10); // Adjust delay as needed
             }
 
@@ -56,6 +76,30 @@ class AudioWebSocket
         // Write audio data to the buffer
         audioBuffer.Write(e.Buffer, 0, e.BytesRecorded);
         audioBuffer.Flush();
+    }
+
+    static void SendMic(byte[] buffer, int count)
+    {
+        // Create a WaveOutEvent to play audio
+        using (var waveOut = new NAudio.Wave.WaveOutEvent())
+        {
+            // Set the desired audio format (16-bit PCM, 48 kHz, stereo)
+            var waveFormat = new NAudio.Wave.WaveFormat(48000, 16, 2);
+            waveOut.Init(new NAudio.Wave.RawSourceWaveStream(new System.IO.MemoryStream(buffer, 0, count), waveFormat));
+
+            // Start playing audio
+            waveOut.Play();
+
+            // Wait for playback to finish
+            while (waveOut.PlaybackState == NAudio.Wave.PlaybackState.Playing)
+            {
+                Thread.Sleep(100);
+            }
+
+            // Stop and dispose of the WaveOutEvent
+            waveOut.Stop();
+            waveOut.Dispose();
+        }
     }
 }
 class Program
