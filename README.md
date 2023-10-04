@@ -14,10 +14,10 @@ TODO:
 
 * Add low-latecy Opus codec encode/decode
 * Add command processor
- * start/stop audio streams
- * choose audio codec (PCM|Opus)
- * choose number of channels (radio only needs 1 channel)
- * choose audio device sample rate
+* Start/stop audio streams
+* Choose audio codec (PCM|Opus)
+* Choose number of channels (radio only needs 1 channel)
+* Choose audio device sample rate
 * Calculate end-to-end latency
 * Add rotator control
 * Add front-end
