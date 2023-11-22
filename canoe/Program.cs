@@ -1,13 +1,13 @@
 ﻿using System.Net;
-using NAudio.Wave;
 
 class Program
 {
     static async Task Main(string[] args)
     {
-        // Set up an HTTP listener to accept WebSocket connections
+        // Set up an HTTP listener to accept WebSocket on all available network interfaces
         var listener = new HttpListener();
-        listener.Prefixes.Add("http://*:8080/"); // Listen on all available network interfaces
+        listener.Prefixes.Add("http://*:8080/");
+
         try
         {
             listener.Start();

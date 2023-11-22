@@ -10,6 +10,7 @@ class Canoe
     private WasapiLoopbackCapture loopbackCapture;
     private MemoryStream audioBuffer;
     public int heading = -1;
+    public Boolean sendRawAudio = false;
 
     public async Task StartAsync(HttpListenerContext context)
     {
@@ -19,43 +20,13 @@ class Canoe
             var webSocketContext = await context.AcceptWebSocketAsync(null);
             WebSocket webSocket = webSocketContext.WebSocket; // Get the WebSocket instance
 
-            // Initialize audio capture
-            loopbackCapture = new WasapiLoopbackCapture();
-            loopbackCapture.DataAvailable += OnDataAvailable;
-            loopbackCapture.StartRecording();
-
-            audioBuffer = new MemoryStream();
-            int i = 0;
-
-            byte[] wsBuffer = new byte[1024];
-
             _ = ReceiveMessagesAsync(webSocket);
+            _ = SendMessagesAsync(webSocket);
 
-            while (webSocket.State == WebSocketState.Open)
+            while (true)
             {
-
-                // Send audio data to the WebSocket client
-                if (audioBuffer.Length > 0)
-                {
-                    i += 1;
-                    byte[] audioData = audioBuffer.ToArray();
-                    await webSocket.SendAsync(new ArraySegment<byte>(audioData), WebSocketMessageType.Binary, true, default);
-                    audioBuffer.SetLength(0);
-                    if (i % 100 == 0) 
-                    { 
-                        long unixTime = ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds();
-                        Console.WriteLine($"{unixTime}: {i} messages"); 
-                    }
-                }
-
-                await Task.Delay(10); // Adjust delay as needed
+                await Task.Delay(1000);  
             }
-
-            // Clean up resources when the WebSocket connection is closed
-            loopbackCapture.StopRecording();
-            loopbackCapture.Dispose();
-            audioBuffer.Dispose();
-            Console.WriteLine("Cleaned up audio resources");
         }
         else
         {
@@ -65,14 +36,56 @@ class Canoe
             return;
         }
     }
-
-    private static async Task ReceiveMessagesAsync(WebSocket webSocket)
+    private async Task SendMessagesAsync(WebSocket webSocket)
     {
+        // Initialize audio capture
+        loopbackCapture = new WasapiLoopbackCapture();
+        loopbackCapture.DataAvailable += OnDataAvailable;
+        loopbackCapture.StartRecording();
+
+        audioBuffer = new MemoryStream();
+        int sendRawAudioMessageCount = 0;
+
+        byte[] wsBuffer = new byte[1024];
+
         try
         {
-            int heading = -1;
-            var buffer = new byte[1024 * 4];
+            while (webSocket.State == WebSocketState.Open)
+            {
+                // Send audio data to the WebSocket client
+                if (audioBuffer.Length > 0)
+                {
+                    sendRawAudioMessageCount += 1;
+                    byte[] audioData = audioBuffer.ToArray();
+                    await webSocket.SendAsync(new ArraySegment<byte>(audioData), WebSocketMessageType.Binary, true, default);
+                    audioBuffer.SetLength(0);
+                    if (sendRawAudioMessageCount % 100 == 0)
+                    {
+                        long unixTime = ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds();
+                        Console.WriteLine($"{unixTime}: {sendRawAudioMessageCount} messages");
+                    }
+                }
 
+                await Task.Delay(10); // Adjust delay as needed
+            }
+            // Clean up resources when the WebSocket connection is closed
+            loopbackCapture.StopRecording();
+            loopbackCapture.Dispose();
+            audioBuffer.Dispose();
+            Console.WriteLine("Cleaned up audio resources");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"WebSocket send error: {ex.Message}");
+        }
+    }   
+    private static async Task ReceiveMessagesAsync(WebSocket webSocket)
+    {
+        int heading = -1;
+        var buffer = new byte[1024 * 4];
+
+        try
+        {
             while (webSocket.State == WebSocketState.Open)
             {
                 WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
